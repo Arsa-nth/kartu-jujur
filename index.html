@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Honest Card Game</title>
+    <style>
+        .card { border: 1px solid #ccc; padding: 10px; margin: 5px; cursor: pointer; }
+        .selected { background-color: yellow; }
+        #game { display: none; }
+    </style>
+</head>
+<body>
+    <div id="lobby">
+        <input type="text" id="playerName" placeholder="Your name">
+        <button onclick="joinGame()">Join Game</button>
+    </div>
+    
+    <div id="game">
+        <div id="players"></div>
+        <div id="hand"></div>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const ws = new WebSocket(`ws://${window.location.host}/ws/game1/player1`);
+        let playerId = null;
+        
+        function joinGame() {
+            playerId = document.getElementById('playerName').value;
+            ws.send(JSON.stringify({
+                action: "join",
+                player: playerId
+            }));
+        }
+        
+        function renderGame(state) {
+            // Render kartu pemain
+            let handHTML = state.players[playerId].hand.map(card => `
+                <div class="card" onclick="selectCard(${JSON.stringify(card)})">
+                    ${card.number} ${card.suit}
+                </div>
+            `).join('');
+            
+            document.getElementById('hand').innerHTML = handHTML;
+        }
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if(data.type === "game_update") {
+                document.getElementById('lobby').style.display = 'none';
+                document.getElementById('game').style.display = 'block';
+                renderGame(data.state);
+            }
+        };
+    </script>
+</body>
+</html>
