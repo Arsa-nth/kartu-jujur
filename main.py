@@ -91,3 +91,13 @@ async def websocket_endpoint(websocket: WebSocket, game_id: str, player_id: str)
     except WebSocketDisconnect:
         del manager.connections[player_id]
         await manager.broadcast(game_id, {"type": "player_left", "player": player_id})
+import os
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8000)),
+        reload=True
+    )
